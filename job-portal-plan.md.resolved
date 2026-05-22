@@ -1,0 +1,50 @@
+# แผนการพัฒนาระบบจัดหางาน (Job Portal Implementation Plan)
+
+แผนงานนี้ถูกออกแบบมาเพื่อสร้างระบบจัดหางานตามแบบ (Design) ที่ให้มา โดยเน้นการพัฒนา Frontend ให้สมบูรณ์และโต้ตอบได้ (Interactive) 
+
+## Phase 1: Project Setup & Foundation (การตั้งค่าเริ่มต้นและสถาปัตยกรรม)
+*   **เป้าหมาย:** เตรียมโครงสร้างโปรเจกต์ให้พร้อมสำหรับการพัฒนา
+*   **งานที่ต้องทำ:**
+    *   สร้างโปรเจกต์ด้วย Vite + React
+    *   ติดตั้งและตั้งค่า Tailwind CSS สำหรับการจัดการสไตล์
+    *   กำหนด Design Tokens (สีหลัก เช่น สีน้ำเงินของแบรนด์, สีพื้นหลัง, ฟอนต์) ตามแบบ
+    *   ติดตั้ง React Router สำหรับการจัดการหน้าจอ (Routing)
+    *   สร้าง Layout หลัก (Header Navbar, Footer)
+
+## Phase 2: Design System & Shared Components (สร้างคอมโพเนนต์พื้นฐาน)
+*   **เป้าหมาย:** สร้าง UI Components ที่ต้องใช้ซ้ำบ่อยๆ เพื่อความรวดเร็วและเป็นมาตรฐานเดียวกัน
+*   **งานที่ต้องทำ:**
+    *   **Typography & Colors:** ตั้งค่าคลาสสำหรับหัวข้อและข้อความ
+    *   **Buttons:** ปุ่มกด (Primary, Secondary, Outline)
+    *   **Form Elements:** Input (Text), Select (Dropdown), Textarea
+    *   **Data Display:** Cards (กล่องข้อมูล), Badges (ป้ายสถานะ เช่น Active, Draft), Progress Bars (หลอดความคืบหน้า)
+    *   **Icons:** ติดตั้งและเตรียมใช้งาน Icon library (เช่น Lucide React หรือ Heroicons)
+
+## Phase 3: Employer Dashboard Page (หน้าแดชบอร์ดหลัก)
+*   **เป้าหมาย:** สร้างหน้าแรกเมื่อผู้ว่าจ้างเข้าสู่ระบบ ("Welcome back, Sarah Jenkins")
+*   **งานที่ต้องทำ:**
+    *   สร้างส่วน Quick Actions (ปุ่ม Post a Job, Schedule Interview)
+    *   สร้าง Stat Cards สรุปตัวเลข (Active Jobs, Applicants, Interviews, Messages)
+    *   สร้างตาราง Recent Applicants
+    *   สร้างรายการ Active Postings
+    *   สร้างกราฟแท่งแนวนอนสำหรับ Hiring Funnel
+
+## Phase 4: Job Management Pages (ระบบจัดการประกาศงาน)
+*   **เป้าหมาย:** สร้างหน้าประวัติการลงประกาศและหน้าสร้างประกาศงานใหม่
+*   **งานที่ต้องทำ:**
+    *   **Job Posting History Page:** สร้างตารางแสดงประวัติประกาศงาน พร้อมช่องค้นหา (Search) และปุ่ม Filter รวมถึงระบบแบ่งหน้า (Pagination)
+    *   **Create Job Post Page:** สร้างฟอร์มลงประกาศงาน (รายละเอียดพื้นฐาน, รายละเอียดและข้อกำหนด) พร้อม Sidebar คำแนะนำเคล็ดลับมือโปร
+
+## Phase 5: Pricing Page & State Management (หน้าแพ็กเกจและการจัดการสถานะ)
+*   **เป้าหมาย:** สร้างหน้าอัปเกรดแพ็กเกจและทำให้ระบบเชื่อมโยงข้อมูลกันเบื้องต้น
+*   **งานที่ต้องทำ:**
+    *   **Pricing Page:** สร้างหน้า "Accelerate Your Hiring Process" แสดงการ์ดราคา 3 ระดับ (Basic, Pro, Enterprise)
+    *   **State Management (Mock):** ใช้ React Context หรือ Zustand เก็บข้อมูลจำลอง เพื่อให้เวลาสร้างงานใหม่ในฟอร์ม ข้อมูลไปปรากฏในหน้า History และ Dashboard อัตโนมัติ
+
+## Phase 6: Polish & Responsive (ปรับแต่งความสวยงามและการรองรับหน้าจอ)
+*   **เป้าหมาย:** ทำให้แอปพลิเคชันสมบูรณ์ สวยงาม และใช้งานได้ทุกอุปกรณ์
+*   **งานที่ต้องทำ:**
+    *   ตรวจสอบความถูกต้องของระยะห่าง (Margin/Padding) และสี ให้เป๊ะตามดีไซน์
+    *   ทำ Responsive Design ให้แสดงผลได้ดีทั้งบนมือถือ แท็บเล็ต และเดสก์ท็อป
+    *   เพิ่ม Micro-interactions (เช่น เอฟเฟกต์ตอน Hover ปุ่ม หรือ Transition ตอนเปลี่ยนหน้า)
+    *   ทดสอบการทำงานภาพรวม (End-to-End Flow)

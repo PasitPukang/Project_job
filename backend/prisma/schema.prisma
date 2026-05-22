@@ -1,0 +1,93 @@
+// Prisma Schema สำหรับโปรเจกต์ หางาน.com
+// ไฟล์นี้กำหนดโครงสร้างตารางในฐานข้อมูล
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ===== ตารางประกาศงาน =====
+// เก็บข้อมูลตำแหน่งงานที่ผู้ว่าจ้างลงประกาศ
+model Job {
+  id           Int      @id @default(autoincrement()) // ID อัตโนมัติ
+  title        String   // ชื่อตำแหน่งงาน เช่น "Senior Frontend Developer"
+  category     String   // หมวดหมู่ เช่น "Engineering", "Design"
+  location     String   // สถานที่ เช่น "San Francisco, CA"
+  department   String   @default("")  // แผนก เช่น "Engineering Dept"
+  workType     String   @default("On-site") // รูปแบบ: On-site, Remote, Hybrid
+  description  String   // รายละเอียดงาน (บทบาท หน้าที่ และทีมงาน)
+  requirements String   @default("")  // คุณสมบัติที่ต้องการ (ทักษะ ประสบการณ์)
+  salaryMin    Int      @default(0)   // เงินเดือนเริ่มต้น
+  salaryMax    Int      @default(0)   // เงินเดือนสูงสุด
+  status       String   @default("Draft") // สถานะ: Active, Draft, Closed
+  applicants   Int      @default(0)   // จำนวนผู้สมัคร
+  interviews   Int      @default(0)   // จำนวนการสัมภาษณ์
+  employerId   Int?     // ผูกกับผู้ใช้ที่เป็นคนลงประกาศ
+  employer     User?    @relation(fields: [employerId], references: [id])
+  applications Application[]
+  createdAt    DateTime @default(now()) // วันที่สร้าง
+  updatedAt    DateTime @updatedAt      // วันที่อัปเดตล่าสุด
+}
+
+// ===== ตารางผู้ใช้งาน =====
+// เก็บข้อมูลผู้ใช้ทั้งผู้ประกอบการและผู้สมัครงาน
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String?  // เก็บ hashed password หรือ null ถ้า login ผ่าน Google
+  email     String   @unique
+  authProvider String @default("local") // "local" หรือ "google"
+  name      String   @default("")
+  role      String   @default("seeker") // "employer" หรือ "seeker"
+  company   String   @default("")       // ชื่อบริษัท (สำหรับ employer)
+  jobs      Job[]
+  applications Application[]
+  resume    Resume?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== ตารางการสมัครงาน =====
+// เก็บข้อมูลผู้ที่สมัครงาน (เชื่อมโยง User กับ Job)
+model Application {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  jobId     Int
+  job       Job      @relation(fields: [jobId], references: [id])
+  resumeUrl String   @default("") // เก็บลิงก์ของเรซูเม่ (ถ้ามี)
+  status    String   @default("Pending") // สถานะ: Pending, Reviewed, Interview, Rejected, Hired
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== ตารางประวัติผู้สมัคร (Resume) =====
+model Resume {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName         String
+  targetedJobTitle String
+  aboutMe          String   @default("")
+  photoUrl         String   @default("")
+  
+  // ข้อมูลการติดต่อ
+  phone            String
+  address          String
+  email            String
+  linkedin         String   @default("")
+  github           String   @default("")
+  
+  // เก็บเป็น JSON
+  experiences      Json     @default("[]")
+  educations       Json     @default("[]")
+  skills           Json     @default("{\"technical\": [], \"soft\": []}")
+  languages        Json     @default("[]")
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
