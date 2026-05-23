@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Bell } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 
 export default function EmployerNavbar() {
@@ -11,6 +11,33 @@ export default function EmployerNavbar() {
   // ดึงข้อมูล User จาก LocalStorage
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
+
+  // State สำหรับ Notification Badge
+  const [pendingCount, setPendingCount] = useState(0);
+
+  // ดึงจำนวนใบสมัครใหม่เมื่อ component mount และทุก 60 วินาที
+  useEffect(() => {
+    if (!user?.token || !user?.id) return;
+
+    const fetchNotificationCount = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/notifications/count/${user.id}`, {
+          headers: { 'Authorization': `Bearer ${user.token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setPendingCount(data.pendingCount || 0);
+        }
+      } catch (err) {
+        // ไม่แสดง error เพราะไม่ critical
+      }
+    };
+
+    fetchNotificationCount();
+    // Polling ทุก 60 วินาที เพื่อ refresh badge โดยไม่ต้อง reload หน้า
+    const interval = setInterval(fetchNotificationCount, 60000);
+    return () => clearInterval(interval);
+  }, [user?.id, user?.token]);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -39,11 +66,46 @@ export default function EmployerNavbar() {
         <div className="hidden md:flex space-x-8">
           <Link to="/employer/create-job" className={getLinkClass('/employer/create-job')}>{t('createJob')}</Link>
           <Link to="/employer/history" className={getLinkClass('/employer/history')}>{t('history')}</Link>
+          {/* Applications link พร้อม Notification Badge */}
+          <Link to="/employer/history" className={`${getLinkClass('/employer/applications')} relative flex items-center gap-1.5`}>
+            {language === 'th' ? 'ใบสมัคร' : 'Applications'}
+            {pendingCount > 0 && (
+              <span className="
+                inline-flex items-center justify-center
+                min-w-[20px] h-5 px-1.5
+                bg-red-500 text-white text-[10px] font-bold
+                rounded-full leading-none
+                animate-pulse
+              ">
+                {pendingCount > 99 ? '99+' : pendingCount}
+              </span>
+            )}
+          </Link>
           <Link to="/employer/pricing" className={getLinkClass('/employer/pricing')}>{t('pricing')}</Link>
         </div>
 
-        {/* Right Section: User & Logout */}
-        <div className="flex items-center space-x-6">
+        {/* Right Section: Bell Icon + User + Logout */}
+        <div className="flex items-center space-x-4">
+
+          {/* Bell Notification Icon */}
+          <Link
+            to="/employer/history"
+            className="relative text-gray-500 hover:text-[#2B5292] transition-colors"
+            title={language === 'th' ? `${pendingCount} ใบสมัครใหม่` : `${pendingCount} new applications`}
+          >
+            <Bell size={22} />
+            {pendingCount > 0 && (
+              <span className="
+                absolute -top-1.5 -right-1.5
+                min-w-[18px] h-[18px] px-1
+                bg-red-500 text-white text-[10px] font-bold
+                rounded-full flex items-center justify-center leading-none
+              ">
+                {pendingCount > 99 ? '99+' : pendingCount}
+              </span>
+            )}
+          </Link>
+
           {user && (
             <div className="hidden lg:flex items-center space-x-2 text-gray-700">
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-[#2B5292]">
@@ -85,4 +147,3 @@ export default function EmployerNavbar() {
     </nav>
   );
 }
-

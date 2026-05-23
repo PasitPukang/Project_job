@@ -615,6 +615,37 @@ app.get('/api/dashboard/stats/:employerId', authMiddleware, requireRole('employe
   }
 });
 
+// --------------------------------------------------
+// 9️⃣ GET /api/notifications/count/:employerId — นับใบสมัครใหม่ (Pending) ทั้งหมดของนายจ้าง
+// --------------------------------------------------
+// ใช้สำหรับแสดง Badge จำนวนในแถบนำทาง (Navbar) เพื่อแจ้งให้นายจ้างทราบ
+app.get('/api/notifications/count/:employerId', authMiddleware, requireRole('employer'), async (req: AuthRequest, res: Response) => {
+  try {
+    const { employerId } = req.params;
+
+    // ป้องกันการดึงข้อมูลของนายจ้างรายอื่น
+    if (Number(employerId) !== req.user!.id) {
+      res.status(403).json({ error: 'ไม่มีสิทธิ์ดึงข้อมูลของผู้ประกอบการรายอื่น' });
+      return;
+    }
+
+    // นับใบสมัครที่สถานะ Pending ในงานทั้งหมดของนายจ้างคนนี้
+    const pendingCount = await prisma.application.count({
+      where: {
+        status: 'Pending',
+        job: {
+          employerId: Number(employerId)
+        }
+      }
+    });
+
+    res.json({ pendingCount });
+  } catch (error) {
+    console.error('❌ Error fetching notification count:', error);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูล notification' });
+  }
+});
+
 // ===================================================
 // 🔐 AUTH ROUTES (จัดการล็อกอิน/สมัครสมาชิก)
 // ===================================================

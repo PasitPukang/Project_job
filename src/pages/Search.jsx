@@ -19,6 +19,10 @@ export default function Search() {
   const [jobTypeFilter, setJobTypeFilter] = useState('');
   const [salaryFilter, setSalaryFilter] = useState(0);
 
+  // Pagination state
+  const JOBS_PER_PAGE = 10;
+  const [currentPage, setCurrentPage] = useState(1);
+
   // Sync state with search parameters from URL (e.g. popular tags clicked on Home page)
   useEffect(() => {
     const q = searchParams.get('q');
@@ -100,6 +104,18 @@ export default function Search() {
 
     return matchSearch && matchLocation && matchCategory && matchJobType && matchSalary;
   });
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, locationFilter, categoryFilter, jobTypeFilter, salaryFilter]);
+
+  // Slice for current page
+  const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
+  const paginatedJobs = filteredJobs.slice(
+    (currentPage - 1) * JOBS_PER_PAGE,
+    currentPage * JOBS_PER_PAGE
+  );
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -276,7 +292,7 @@ export default function Search() {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredJobs.map((job) => (
+            {paginatedJobs.map((job) => (
               <div key={job.id} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
                 <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
                   <div className="flex gap-4">
@@ -350,6 +366,74 @@ export default function Search() {
                 </div>
               </div>
             ))}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 pt-8 pb-2">
+                {/* Previous Button */}
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {language === 'th' ? '← ก่อนหน้า' : '← Prev'}
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      // แสดงแค่ 5 หน้าแวดล้อม currentPage เพื่อไม่ให้ล้น
+                      return page === 1 || page === totalPages ||
+                        (page >= currentPage - 2 && page <= currentPage + 2);
+                    })
+                    .reduce((acc, page, idx, arr) => {
+                      // เพิ่ม ... เมื่อมีช่องว่าง
+                      if (idx > 0 && page - arr[idx - 1] > 1) {
+                        acc.push('...');
+                      }
+                      acc.push(page);
+                      return acc;
+                    }, [])
+                    .map((item, idx) =>
+                      item === '...' ? (
+                        <span key={`dots-${idx}`} className="px-2 py-2 text-gray-400 text-sm select-none">…</span>
+                      ) : (
+                        <button
+                          key={item}
+                          onClick={() => setCurrentPage(item)}
+                          className={`w-9 h-9 rounded-xl text-sm font-bold transition-all ${
+                            currentPage === item
+                              ? 'bg-[#2B5292] text-white shadow-md'
+                              : 'border border-gray-300 text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          {item}
+                        </button>
+                      )
+                    )
+                  }
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-xl border border-gray-300 text-sm font-semibold text-gray-600 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {language === 'th' ? 'ถัดไป →' : 'Next →'}
+                </button>
+              </div>
+            )}
+
+            {/* Page info */}
+            {totalPages > 1 && (
+              <p className="text-center text-xs text-gray-400 pb-4">
+                {language === 'th'
+                  ? `หน้า ${currentPage} จาก ${totalPages} หน้า`
+                  : `Page ${currentPage} of ${totalPages}`}
+              </p>
+            )}
           </div>
         )}
       </div>
