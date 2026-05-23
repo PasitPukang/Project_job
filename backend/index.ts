@@ -440,6 +440,37 @@ app.patch('/api/applications/:id/status', authMiddleware, requireRole('employer'
 });
 
 // --------------------------------------------------
+// 7.7️⃣5️⃣ GET /api/applications/seeker — ดึงประวัติการสมัครงานทั้งหมดของผู้สมัครที่ล็อกอินอยู่
+// --------------------------------------------------
+app.get('/api/applications/seeker', authMiddleware, requireRole('seeker'), async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const applications = await prisma.application.findMany({
+      where: { userId: Number(userId) },
+      include: {
+        job: {
+          include: {
+            employer: {
+              select: {
+                id: true,
+                name: true,
+                company: true,
+                email: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(applications);
+  } catch (error) {
+    console.error('❌ Error fetching seeker applications:', error);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการดึงข้อมูลการสมัครงาน' });
+  }
+});
+
+// --------------------------------------------------
 // 7.8️⃣ GET /api/resumes/user/:userId — ดึงข้อมูลเรซูเม่ของผู้สมัคร (อนุญาตเฉพาะเจ้าของ หรือ นายจ้าง)
 // --------------------------------------------------
 app.get('/api/resumes/user/:userId', authMiddleware, async (req: AuthRequest, res: Response) => {
@@ -829,6 +860,104 @@ app.post('/api/auth/google', async (req: Request, res: Response) => {
   } catch (error) {
     console.error("❌ Google Auth Error:", error);
     res.status(500).json({ error: 'Failed to authenticate with Google' });
+  }
+});
+
+// --------------------------------------------------
+// 🛡️ PUT /api/users/profile — อัปเดตข้อมูลผู้ใช้งาน (อีเมล, ชื่อ, รหัสผ่าน)
+// --------------------------------------------------
+app.put('/api/users/profile', authMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const { name, email, username, password } = req.body;
+
+    // ตรวจสอบข้อมูลเบื้องต้น
+    if (!username || !email) {
+      res.status(400).json({ error: 'กรุณากรอกชื่อผู้ใช้งานและอีเมล' });
+      return;
+    }
+
+    if (username.length < 3) {
+      res.status(400).json({ error: 'ชื่อผู้ใช้งานต้องมีความยาวอย่างน้อย 3 ตัวอักษร' });
+      return;
+    }
+
+    if (!email.includes('@')) {
+      res.status(400).json({ error: 'รูปแบบอีเมลไม่ถูกต้อง' });
+      return;
+    }
+
+    // เช็คว่า username หรือ email ซ้ำกับผู้อื่นหรือไม่
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email }
+        ],
+        NOT: { id: userId }
+      }
+    });
+
+    if (existingUser) {
+      res.status(400).json({ error: 'ชื่อผู้ใช้งานหรืออีเมลนี้ถูกใช้งานโดยผู้อื่นแล้ว' });
+      return;
+    }
+
+    // เตรียมข้อมูลอัปเดต
+    const updateData: any = {
+      username: username.trim(),
+      email: email.trim(),
+      name: name ? name.trim() : ""
+    };
+
+    if (password) {
+      if (password.length < 6) {
+        res.status(400).json({ error: 'รหัสผ่านใหม่ต้องมีความยาวอย่างน้อย 6 ตัวอักษร' });
+        return;
+      }
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    // อัปเดตตาราง User
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData
+    });
+
+    // หากเป็น Seeker อัปเดต fullName และ email ในตาราง Resume ด้วยถ้ามีข้อมูลอยู่แล้ว
+    if (updatedUser.role === 'seeker') {
+      const resumeExists = await prisma.resume.findUnique({
+        where: { userId }
+      });
+      if (resumeExists) {
+        await prisma.resume.update({
+          where: { userId },
+          data: {
+            fullName: updatedUser.name,
+            email: updatedUser.email
+          }
+        });
+      }
+    }
+
+    // สร้าง JWT Token ใหม่เผื่อว่าข้อมูลสำคัญเปลี่ยน
+    const token = signToken({ id: updatedUser.id, username: updatedUser.username, role: updatedUser.role });
+
+    res.json({
+      message: 'อัปเดตข้อมูลสำเร็จ',
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        role: updatedUser.role,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        company: updatedUser.company,
+        token
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error updating user profile:', error);
+    res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูลผู้ใช้งาน' });
   }
 });
 

@@ -42,9 +42,9 @@
 
 - [x] **Notification Badge** บน Employer Navbar — แสดง Pending applications (poll ทุก 60s) 
 - [x] **Pagination** หน้า Search — 10 งานต่อหน้า มีปุ่มเปลี่ยนหน้าและ smart page numbers
-- [ ] หน้า Profile ของ Seeker — ดู/แก้ไขข้อมูลส่วนตัวและเรซูเม่
-- [ ] Bookmark / บันทึกงานที่สนใจ — เก็บใน localStorage
-- [ ] สถานะใบสมัครสำหรับ Seeker — ดูได้ว่าสมัครงานไหนไปแล้ว สถานะเป็นอะไร
+- [x] หน้า Profile ของ Seeker — ดู/แก้ไขข้อมูลส่วนตัวและเรซูเม่
+- [x] Bookmark / บันทึกงานที่สนใจ — เก็บใน localStorage
+- [x] สถานะใบสมัครสำหรับ Seeker — ดูได้ว่าสมัครงานไหนไปแล้ว สถานะเป็นอะไร
 - [ ] Email ยืนยันการสมัครสมาชิก
 - [ ] Refresh Token (ตอนนี้ใช้ 7 วัน fixed)
 - [ ] Upload รูปภาพ/เอกสาร (ตอนนี้ใช้ URL)

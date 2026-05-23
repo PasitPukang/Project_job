@@ -11,6 +11,7 @@ import LoginSeeker from './pages/LoginSeeker';
 import RegisterSeeker from './pages/RegisterSeeker';
 import RegisterEmployer from './pages/RegisterEmployer';
 import ApplyWizard from './pages/ApplyWizard';
+import Profile from './pages/Profile';
 
 import JobDetails from './pages/JobDetails';
 import CompanyDetails from './pages/CompanyDetails';
@@ -44,6 +45,11 @@ function App() {
             <Route path="/apply/:jobId" element={
               <ProtectedRoute requiredRole="seeker">
                 <ApplyWizard />
+              </ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute requiredRole="seeker">
+                <Profile />
               </ProtectedRoute>
             } />
           </Route>
