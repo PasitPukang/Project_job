@@ -40,12 +40,16 @@
 
 ## 5. Development Phases
 
-- [x] Phase 1: Project Setup (Vite + React)
-- [x] Phase 2: Design System & Shared Components
-- [x] Phase 3: Employer Dashboard Page
-- [x] Phase 4: Job Management Pages (History, Create)
-- [x] Phase 5: Pricing Page & State Management
-- [x] Phase 6: Polish & Responsive
+- [x] **Notification Badge** บน Employer Navbar — แสดง Pending applications (poll ทุก 60s) 
+- [x] **Pagination** หน้า Search — 10 งานต่อหน้า มีปุ่มเปลี่ยนหน้าและ smart page numbers
+- [ ] หน้า Profile ของ Seeker — ดู/แก้ไขข้อมูลส่วนตัวและเรซูเม่
+- [ ] Bookmark / บันทึกงานที่สนใจ — เก็บใน localStorage
+- [ ] สถานะใบสมัครสำหรับ Seeker — ดูได้ว่าสมัครงานไหนไปแล้ว สถานะเป็นอะไร
+- [ ] Email ยืนยันการสมัครสมาชิก
+- [ ] Refresh Token (ตอนนี้ใช้ 7 วัน fixed)
+- [ ] Upload รูปภาพ/เอกสาร (ตอนนี้ใช้ URL)
+- [ ] Chat ระหว่าง Employer ↔ Seeker
+- [ ] Admin panel
 
 ## 6. Important Notes for Agents
 
