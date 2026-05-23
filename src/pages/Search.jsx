@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { Search as SearchIcon, MapPin, Building2, ChevronDown, Clock, Loader2, Briefcase } from 'lucide-react';
+import { Search as SearchIcon, MapPin, Building2, ChevronDown, Clock, Loader2, Briefcase, Heart } from 'lucide-react';
 import { useLanguage } from '../components/LanguageContext';
 
 export default function Search() {
@@ -52,6 +52,28 @@ export default function Search() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const [savedJobsIds, setSavedJobsIds] = useState(() => {
+    return JSON.parse(localStorage.getItem('savedJobs') || '[]');
+  });
+
+  const toggleSaveJob = (jobId) => {
+    const userStr = localStorage.getItem('user');
+    if (!userStr) {
+      alert(language === 'th' ? 'กรุณาเข้าสู่ระบบก่อนบันทึกงาน' : 'Please login first to save jobs');
+      navigate('/login/seeker');
+      return;
+    }
+    
+    let updated;
+    if (savedJobsIds.includes(jobId)) {
+      updated = savedJobsIds.filter(id => id !== jobId);
+    } else {
+      updated = [...savedJobsIds, jobId];
+    }
+    setSavedJobsIds(updated);
+    localStorage.setItem('savedJobs', JSON.stringify(updated));
   };
 
   const handleApplyClick = (jobId) => {
@@ -360,6 +382,18 @@ export default function Search() {
                         className="bg-[#2B5292] hover:bg-blue-800 text-white px-5 py-2 rounded-xl font-bold transition-all text-xs flex-1 md:flex-none"
                       >
                         {t('applyBtn')}
+                      </button>
+                      
+                      <button
+                        onClick={() => toggleSaveJob(job.id)}
+                        className={`p-2 border rounded-xl font-bold transition-all text-xs flex items-center justify-center shrink-0 ${
+                          savedJobsIds.includes(job.id)
+                            ? 'border-red-200 bg-red-50 text-red-600 hover:bg-red-100'
+                            : 'border-gray-300 text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                        }`}
+                        title={savedJobsIds.includes(job.id) ? (language === 'th' ? 'ยกเลิกการบันทึก' : 'Unsave Job') : (language === 'th' ? 'บันทึกงาน' : 'Save Job')}
+                      >
+                        <Heart size={16} fill={savedJobsIds.includes(job.id) ? 'currentColor' : 'none'} />
                       </button>
                     </div>
                   </div>
